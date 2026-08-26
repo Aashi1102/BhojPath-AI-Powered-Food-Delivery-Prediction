@@ -456,7 +456,7 @@ FoodDelivery-TimeAI/
 | `app.py`                              | Flask backend and prediction API  |
 | `index.html`                          | Web frontend                      |
 | `Food delivery.csv`                   | Original dataset                  |
-| `Food_Delivery_Time_Prediction.ipynb` | Complete ML training and analysis |
+| `FoodTime_AI_Model_Training.ipynb`    | Complete ML training and analysis |
 | `xgb_best.pkl`                        | Trained XGBoost model             |
 | `Standard_scaler.pkl`                 | Saved StandardScaler              |
 | `requirements.txt`                    | Python dependencies               |
