@@ -1,4 +1,4 @@
-# 🍔 FoodTime AI — Food Delivery Time Prediction
+# 🍔 BhojPath — Food Delivery Time Prediction
 
 > An end-to-end Machine Learning application that predicts how many minutes a food delivery will take based on distance, traffic, weather, order details, and delivery partner information.
 
