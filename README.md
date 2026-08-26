@@ -1,10 +1,3 @@
-Absolutely. I’d update your README to reflect the **actual final project** now: notebook + dataset + trained model + Flask frontend/backend + GitHub + Render deployment.
-
-Your uploaded README already has the correct ML results and workflow, including **45,593 orders**, tuned XGBoost with **R² 0.83 / RMSE 3.91**, Haversine distance, and `RandomizedSearchCV`. 
-
-Here is the **updated, GitHub-ready README**:
-
-````markdown
 # 🍔 FoodTime AI — Food Delivery Time Prediction
 
 > An end-to-end Machine Learning application that predicts how many minutes a food delivery will take based on distance, traffic, weather, order details, and delivery partner information.
