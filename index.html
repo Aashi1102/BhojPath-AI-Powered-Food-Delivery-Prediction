@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FoodTime AI — Delivery Time Predictor</title>
+
+<style>
+:root{
+    --bg:#f7f9fc;
+    --card:#ffffff;
+    --text:#172033;
+    --muted:#64748b;
+    --border:#e2e8f0;
+    --orange:#ff8500;
+    --orange-dark:#e56f00;
+    --green:#0ca65a;
+    --green-bg:#f1fff7;
+    --blue-bg:#f2f7ff;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:Arial,Helvetica,sans-serif;
+    min-height:100vh;
+}
+
+nav{
+    height:74px;
+    background:white;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 5%;
+}
+
+.logo{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.logo-icon{font-size:28px}
+
+.logo-name{
+    font-size:23px;
+    font-weight:800;
+}
+
+.logo-name span{color:var(--orange)}
+
+.tagline{
+    color:var(--muted);
+    margin-left:18px;
+    font-size:14px;
+}
+
+.nav-links{
+    display:flex;
+    gap:28px;
+}
+
+.nav-links a{
+    text-decoration:none;
+    color:var(--text);
+    font-size:14px;
+}
+
+.container{
+    max-width:1450px;
+    margin:30px auto;
+    padding:0 24px 40px;
+}
+
+.dashboard{
+    display:grid;
+    grid-template-columns:1.1fr 1fr;
+    gap:24px;
+}
+
+.card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:26px;
+    box-shadow:0 8px 25px rgba(15,23,42,.05);
+}
+
+.card-header{
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+    margin-bottom:23px;
+}
+
+.card-icon{
+    font-size:25px;
+}
+
+.card-header h2{
+    font-size:20px;
+}
+
+.card-header p{
+    color:var(--muted);
+    font-size:13px;
+    margin-top:5px;
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:17px 22px;
+}
+
+.field{
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+}
+
+.full{
+    grid-column:1/-1;
+}
+
+label{
+    color:#334155;
+    font-size:12px;
+    font-weight:700;
+}
+
+input,select{
+    height:43px;
+    width:100%;
+    border:1px solid #d9e1eb;
+    border-radius:8px;
+    background:white;
+    color:var(--text);
+    padding:0 12px;
+    font-size:14px;
+    outline:none;
+}
+
+input:focus,select:focus{
+    border-color:var(--orange);
+    box-shadow:0 0 0 3px rgba(255,133,0,.10);
+}
+
+.distance-toggle{
+    display:flex;
+    gap:9px;
+    margin-bottom:2px;
+}
+
+.distance-toggle button{
+    background:white;
+    border:1px solid var(--border);
+    border-radius:7px;
+    padding:8px 13px;
+    color:#475569;
+    font-size:11px;
+    font-weight:700;
+    text-transform:uppercase;
+    cursor:pointer;
+}
+
+.distance-toggle button.active{
+    border-color:var(--orange);
+    color:var(--orange-dark);
+}
+
+.coord-row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+}
+
+.hidden{display:none!important}
+
+.predict-row{
+    grid-column:1/-1;
+    display:flex;
+    align-items:center;
+    gap:15px;
+    margin-top:4px;
+}
+
+.predict-btn{
+    background:var(--orange);
+    color:#fff;
+    border:0;
+    border-radius:9px;
+    padding:14px 25px;
+    font-size:14px;
+    font-weight:800;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.predict-btn:hover{
+    background:var(--orange-dark);
+    transform:translateY(-1px);
+}
+
+.predict-btn:disabled{
+    opacity:.65;
+    cursor:not-allowed;
+}
+
+.inline-result{
+    color:var(--muted);
+    font-size:13px;
+}
+
+.inline-result strong{
+    color:var(--green);
+    font-size:25px;
+    margin-right:5px;
+}
+
+.route{
+    margin-top:20px;
+    padding:15px 18px;
+    background:#fbfcfe;
+    border:1px solid var(--border);
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.route-point{
+    font-size:11px;
+    font-weight:700;
+    color:var(--muted);
+    white-space:nowrap;
+}
+
+.route-line{
+    height:2px;
+    flex:1;
+    background:#dce3ec;
+    position:relative;
+}
+
+.scooter{
+    position:absolute;
+    left:0;
+    top:-12px;
+    transition:left .8s ease;
+}
+
+.result-box{
+    min-height:220px;
+    border:1px solid #bce8d2;
+    background:var(--green-bg);
+    border-radius:11px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:65px;
+    padding:25px;
+}
+
+.result-number{
+    text-align:center;
+}
+
+.result-number h1{
+    color:var(--green);
+    font-size:72px;
+    line-height:1;
+}
+
+.minutes{
+    color:#078849;
+    font-size:23px;
+    font-weight:800;
+    margin-top:8px;
+}
+
+.estimated{
+    color:var(--muted);
+    margin-top:6px;
+    font-size:13px;
+}
+
+.delivery-art{
+    font-size:82px;
+}
+
+.success{
+    margin-top:18px;
+    padding:15px;
+    border:1px solid #c5ead6;
+    background:#fbfffd;
+    border-radius:9px;
+    display:flex;
+    align-items:center;
+    gap:13px;
+}
+
+.check{
+    width:38px;
+    height:38px;
+    border:2px solid var(--green);
+    color:var(--green);
+    border-radius:50%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-weight:800;
+}
+
+.success strong{
+    color:#087f47;
+    font-size:14px;
+}
+
+.success p{
+    color:var(--muted);
+    font-size:12px;
+    margin-top:4px;
+}
+
+.summary{
+    margin-top:25px;
+}
+
+.summary h3{
+    font-size:16px;
+    margin-bottom:16px;
+}
+
+.summary-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:13px 30px;
+}
+
+.summary-item{
+    display:flex;
+    justify-content:space-between;
+    gap:15px;
+    font-size:13px;
+    color:var(--muted);
+}
+
+.summary-item span:last-child{
+    color:var(--text);
+    font-weight:700;
+    text-align:right;
+}
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:20px;
+    margin-top:24px;
+}
+
+.stat{
+    background:white;
+    border:1px solid var(--border);
+    border-radius:11px;
+    padding:20px;
+}
+
+.stat-icon{
+    font-size:24px;
+    margin-bottom:10px;
+}
+
+.stat h3{
+    font-size:15px;
+    margin-bottom:6px;
+}
+
+.stat p{
+    color:var(--muted);
+    font-size:12px;
+}
+
+.error{
+    color:#dc2626;
+    font-size:12px;
+}
+
+@media(max-width:950px){
+    .dashboard{grid-template-columns:1fr}
+    .stats{grid-template-columns:1fr}
+}
+
+@media(max-width:650px){
+    nav{padding:0 18px}
+    .nav-links,.tagline{display:none}
+    .form-grid{grid-template-columns:1fr}
+    .full{grid-column:auto}
+    .predict-row{grid-column:auto}
+    .summary-grid{grid-template-columns:1fr}
+    .result-box{gap:20px}
+    .result-number h1{font-size:58px}
+}
+</style>
+</head>
+
+<body>
+
+<nav>
+    <div class="logo">
+        <div class="logo-icon">🛵</div>
+        <div class="logo-name">Food<span>Time</span> AI</div>
+        <div class="tagline">Predict your food delivery time</div>
+    </div>
+
+    <div class="nav-links">
+        <a href="#">Home</a>
+        <a href="#">About</a>
+        <a href="#">How it works</a>
+        <a href="#">GitHub</a>
+    </div>
+</nav>
+
+<div class="container">
+
+<div class="dashboard">
+
+<!-- LEFT -->
+<div class="card">
+
+    <div class="card-header">
+        <div class="card-icon">📋</div>
+        <div>
+            <h2>Order Details</h2>
+            <p>Enter the details to predict delivery time</p>
+        </div>
+    </div>
+
+    <form id="predict-form">
+    <div class="form-grid">
+
+        <div class="field">
+            <label>Delivery Person Age</label>
+            <input id="age" type="number" min="15" max="60" value="45" required>
+        </div>
+
+        <div class="field">
+            <label>Delivery Person Rating</label>
+            <input id="rating" type="number" min="1" max="5" step="0.1" value="4.5" required>
+        </div>
+
+        <div class="field full">
+            <label>Distance</label>
+
+            <div class="distance-toggle">
+                <button type="button" id="km-btn" class="active">Enter KM Directly</button>
+                <button type="button" id="coord-btn">Use Coordinates</button>
+            </div>
+        </div>
+
+        <div class="field full" id="km-field">
+            <label>Distance (KM)</label>
+            <input id="distance_km" type="number" min="0" max="99" step="0.1" value="10.0">
+        </div>
+
+        <div class="field full hidden" id="coord-field">
+            <label>Restaurant & Delivery Coordinates</label>
+            <div class="coord-row">
+                <input id="restaurant_lat" type="number" step="0.0001" placeholder="Restaurant latitude">
+                <input id="restaurant_lon" type="number" step="0.0001" placeholder="Restaurant longitude">
+            </div>
+            <div class="coord-row" style="margin-top:8px">
+                <input id="delivery_lat" type="number" step="0.0001" placeholder="Delivery latitude">
+                <input id="delivery_lon" type="number" step="0.0001" placeholder="Delivery longitude">
+            </div>
+        </div>
+
+        <div class="field">
+            <label>Order Hour (0–23)</label>
+            <input id="order_hour" type="number" min="0" max="23" value="15" required>
+        </div>
+
+        <div class="field">
+            <label>Road Traffic Density</label>
+            <select id="traffic">
+                <option selected>Low</option>
+                <option>Medium</option>
+                <option>High</option>
+                <option>Jam</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Vehicle Condition (0–3)</label>
+            <input id="vehicle_condition" type="number" min="0" max="3" value="2" required>
+        </div>
+
+        <div class="field">
+            <label>Multiple Deliveries (0–3)</label>
+            <input id="multiple_deliveries" type="number" min="0" max="3" value="1" required>
+        </div>
+
+        <div class="field">
+            <label>Type of Order</label>
+            <select id="order_type">
+                <option>Buffet</option>
+                <option>Drinks</option>
+                <option selected>Meal</option>
+                <option>Snack</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Type of Vehicle</label>
+            <select id="vehicle_type">
+                <option>bicycle</option>
+                <option>electric_scooter</option>
+                <option selected>motorcycle</option>
+                <option>scooter</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>City Type</label>
+            <select id="city">
+                <option selected>Metropolitian</option>
+                <option>Semi-Urban</option>
+                <option>Urban</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Weather</label>
+            <select id="weather">
+                <option>Cloudy</option>
+                <option selected>Fog</option>
+                <option>Sandstorms</option>
+                <option>Stormy</option>
+                <option>Sunny</option>
+                <option>Windy</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Festival Day?</label>
+            <select id="festival">
+                <option selected>Yes</option>
+                <option>No</option>
+            </select>
+        </div>
+
+        <div class="predict-row">
+            <button class="predict-btn" id="predict-btn" type="submit">
+                Predict delivery time
+            </button>
+            <div class="inline-result" id="inline-result"></div>
+        </div>
+
+    </div>
+    </form>
+
+</div>
+
+<!-- RIGHT -->
+<div class="card">
+
+    <div class="card-header">
+        <div class="card-icon">⏱️</div>
+        <div>
+            <h2>Prediction Result</h2>
+            <p>Based on the provided details</p>
+        </div>
+    </div>
+
+    <div class="result-box">
+        <div class="result-number">
+            <h1 id="prediction">--</h1>
+            <div class="minutes">minutes</div>
+            <div class="estimated">(estimated)</div>
+        </div>
+
+        <div class="delivery-art">🛵</div>
+    </div>
+
+    <div class="success">
+        <div class="check">✓</div>
+        <div>
+            <strong>Estimated delivery time: <span id="prediction-text">Waiting for prediction</span></strong>
+            <p>This is an AI prediction based on historical delivery data.</p>
+        </div>
+    </div>
+
+    <div class="summary">
+        <h3>Provided Details Summary</h3>
+
+        <div class="summary-grid">
+            <div class="summary-item"><span>📍 Distance</span><span id="s-distance">10.0 km</span></div>
+            <div class="summary-item"><span>🍔 Order Type</span><span id="s-order">Meal</span></div>
+            <div class="summary-item"><span>🕐 Order Hour</span><span id="s-hour">15</span></div>
+            <div class="summary-item"><span>🛵 Vehicle Type</span><span id="s-vehicle">motorcycle</span></div>
+            <div class="summary-item"><span>🚗 Traffic Density</span><span id="s-traffic">Low</span></div>
+            <div class="summary-item"><span>🏙️ City Type</span><span id="s-city">Metropolitian</span></div>
+            <div class="summary-item"><span>🔧 Vehicle Condition</span><span id="s-condition">2</span></div>
+            <div class="summary-item"><span>🌤️ Weather</span><span id="s-weather">Fog</span></div>
+            <div class="summary-item"><span>📦 Multiple Deliveries</span><span id="s-multiple">1</span></div>
+            <div class="summary-item"><span>🎉 Festival Day</span><span id="s-festival">Yes</span></div>
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="route">
+    <div class="route-point">🍽️ RESTAURANT</div>
+    <div class="route-line"><span class="scooter" id="scooter">🛵</span></div>
+    <div class="route-point">📍 YOU</div>
+</div>
+
+<div class="stats">
+    <div class="stat">
+        <div class="stat-icon">🗄️</div>
+        <h3>Trained on 45K+ Orders</h3>
+        <p>Real-world food delivery data</p>
+    </div>
+
+    <div class="stat">
+        <div class="stat-icon">📈</div>
+        <h3>Model: Tuned XGBoost</h3>
+        <p>R² Score: 0.83 &nbsp; | &nbsp; RMSE: 3.91 minutes</p>
+    </div>
+
+    <div class="stat">
+        <div class="stat-icon">🎯</div>
+        <h3>Average Error</h3>
+        <p>Approximately 4 minutes on the test set</p>
+    </div>
+</div>
+
+</div>
+
+<script>
+const kmBtn = document.getElementById("km-btn");
+const coordBtn = document.getElementById("coord-btn");
+const kmField = document.getElementById("km-field");
+const coordField = document.getElementById("coord-field");
+
+let mode = "km";
+
+kmBtn.addEventListener("click", () => {
+    mode = "km";
+    kmBtn.classList.add("active");
+    coordBtn.classList.remove("active");
+    kmField.classList.remove("hidden");
+    coordField.classList.add("hidden");
+});
+
+coordBtn.addEventListener("click", () => {
+    mode = "coords";
+    coordBtn.classList.add("active");
+    kmBtn.classList.remove("active");
+    coordField.classList.remove("hidden");
+    kmField.classList.add("hidden");
+});
+
+const form = document.getElementById("predict-form");
+const button = document.getElementById("predict-btn");
+const inlineResult = document.getElementById("inline-result");
+const scooter = document.getElementById("scooter");
+
+form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    button.disabled = true;
+    button.textContent = "Calculating...";
+    inlineResult.className = "inline-result";
+    inlineResult.textContent = "";
+
+    const payload = {
+        age: document.getElementById("age").value,
+        rating: document.getElementById("rating").value,
+        order_hour: document.getElementById("order_hour").value,
+        traffic: document.getElementById("traffic").value,
+        vehicle_condition: document.getElementById("vehicle_condition").value,
+        multiple_deliveries: document.getElementById("multiple_deliveries").value,
+        order_type: document.getElementById("order_type").value,
+        vehicle_type: document.getElementById("vehicle_type").value,
+        city: document.getElementById("city").value,
+        weather: document.getElementById("weather").value,
+        festival: document.getElementById("festival").value
+    };
+
+    if (mode === "km") {
+        payload.distance_km = document.getElementById("distance_km").value;
+    } else {
+        payload.restaurant_lat = document.getElementById("restaurant_lat").value;
+        payload.restaurant_lon = document.getElementById("restaurant_lon").value;
+        payload.delivery_lat = document.getElementById("delivery_lat").value;
+        payload.delivery_lon = document.getElementById("delivery_lon").value;
+    }
+
+    try {
+        const response = await fetch("/predict", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || "Prediction failed");
+        }
+
+        document.getElementById("prediction").textContent = data.predicted_minutes;
+        document.getElementById("prediction-text").textContent =
+            data.predicted_minutes + " minutes";
+
+        inlineResult.innerHTML =
+            "<strong>" + data.predicted_minutes + "</strong> minutes (estimated)";
+
+        scooter.style.left = "calc(100% - 20px)";
+
+        updateSummary(payload);
+
+    } catch (error) {
+        inlineResult.className = "inline-result error";
+        inlineResult.textContent = "Prediction failed: " + error.message;
+    } finally {
+        button.disabled = false;
+        button.textContent = "Predict delivery time";
+    }
+});
+
+function updateSummary(data) {
+    const distance = mode === "km"
+        ? data.distance_km + " km"
+        : "Calculated from coordinates";
+
+    document.getElementById("s-distance").textContent = distance;
+    document.getElementById("s-order").textContent = data.order_type;
+    document.getElementById("s-hour").textContent = data.order_hour;
+    document.getElementById("s-vehicle").textContent = data.vehicle_type;
+    document.getElementById("s-traffic").textContent = data.traffic;
+    document.getElementById("s-city").textContent = data.city;
+    document.getElementById("s-condition").textContent = data.vehicle_condition;
+    document.getElementById("s-weather").textContent = data.weather;
+    document.getElementById("s-multiple").textContent = data.multiple_deliveries;
+    document.getElementById("s-festival").textContent = data.festival;
+}
+</script>
+
+</body>
+</html>
